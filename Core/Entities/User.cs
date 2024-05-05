@@ -1,12 +1,8 @@
-﻿using Database.Entities.Base;
-using System;
-using System.Collections.Generic;
+﻿using Core.Entities.Base;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Database.Entities
+
+namespace Core.Entities
 {
     public class User : AuditableEntity
     {

@@ -1,4 +1,4 @@
-using Database.Entities;
+using Database;
 using Microsoft.EntityFrameworkCore;
 using System;
 
