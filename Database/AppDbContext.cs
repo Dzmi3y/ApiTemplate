@@ -1,6 +1,8 @@
 ﻿using Core.Entities;
 using Core.Entities.Base;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query;
+using System.Linq.Expressions;
 
 namespace Database
 {
@@ -12,6 +14,49 @@ namespace Database
 
         public DbSet<User>? Users { get; set; }
         public DbSet<RefreshToken>? RefreshTokens { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            SetRelationsAndIndexes(modelBuilder);
+            ApplyGlobalIsDeletedFilter(modelBuilder);
+        }
+
+
+        private static void SetRelationsAndIndexes(ModelBuilder modelBuilder)
+        {
+            //modelBuilder.Entity<User>().HasData(new List<User>
+            //{
+            //    new User
+            //    {
+            //        Id = Guid.NewGuid(),
+            //        Email = "test@test.com",
+            //        PasswordHash =
+            //            "AQAAAAEAACcQAAAAEK3lyWfqNrzQ0P109198vqCfSb4EdhlF2EprWMW9aXYsQnEp4tx3vnYQLZGuebYClg==", // 1qaz@WSX
+            //        Confirmed = true,
+            //        Name = "Test Developer",
+            //        CreatedDateUtc = DateTime.UtcNow,
+            //        ModifiedDateUtc = DateTime.UtcNow,
+            //        CreatedBy = "DbContextInitializer",
+            //        ModifiedBy = "DbContextInitializer"
+            //    }
+            //});
+
+        }
+
+        private static void ApplyGlobalIsDeletedFilter(ModelBuilder modelBuilder)
+        {
+            Expression<Func<AuditableEntity, bool>> expression = entity => !entity.IsDeleted;
+            foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+            {
+                if (entityType.ClrType.BaseType != typeof(AuditableEntity)) continue;
+
+                var newParam = Expression.Parameter(entityType.ClrType);
+                var newBody =
+                    ReplacingExpressionVisitor.Replace(expression.Parameters.Single(), newParam, expression.Body);
+                modelBuilder.Entity(entityType.ClrType).HasQueryFilter(Expression.Lambda(newBody, newParam));
+            }
+        }
+
 
         public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
