@@ -1,8 +1,8 @@
-﻿using Core.Entities.Base;
+﻿using Database.Entities.Base;
 using System.ComponentModel.DataAnnotations;
 
 
-namespace Core.Entities
+namespace Database.Entities
 {
     public class User : AuditableEntity
     {

@@ -1,5 +1,5 @@
 ﻿
-namespace Core.Entities.Base
+namespace Database.Entities.Base
 {
     public class AuditableEntity
     {

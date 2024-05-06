@@ -1,5 +1,5 @@
-﻿using Core.Entities;
-using Core.Entities.Base;
+﻿using Database.Entities;
+using Database.Entities.Base;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using System.Linq.Expressions;

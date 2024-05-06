@@ -1,4 +1,7 @@
+using Core.Interfaces;
+using Core.Services;
 using Database;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System;
 
@@ -11,6 +14,12 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 // Add services to the container.
 
 builder.Services.AddControllers();
+
+builder.Services.AddHttpClient();
+
+builder.Services.AddScoped(typeof(IPasswordHasher<>), typeof(PasswordHasher<>));
+builder.Services.AddScoped<IUserService, UserService>();
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
