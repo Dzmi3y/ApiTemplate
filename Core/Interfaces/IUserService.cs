@@ -7,5 +7,6 @@ namespace Core.Interfaces
     {
         Task<User?> GetUserByEmailAsync(string email);
         Task<Guid> RegisterAccountAsync(AccountUserDto account);
+        Task DeleteAccountAsync(Guid userId);
     }
 }

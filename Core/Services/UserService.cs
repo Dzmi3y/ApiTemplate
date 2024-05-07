@@ -42,6 +42,14 @@ namespace Core.Services
             return newUser.Id;
         }
 
+        public async Task DeleteAccountAsync(Guid userId)
+        {
+            var user = await _db.Users.SingleOrDefaultAsync(u => u.Id == userId);
+            if (user == null) return;
+
+            user.IsDeleted = true;
+            await _db.SaveChangesAsync();
+        }
 
     }
 }
