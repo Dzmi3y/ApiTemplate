@@ -8,11 +8,11 @@ namespace Core.Services
 {
     public class EmailServiceProvider : IEmailServiceProvider
     {
-        private readonly EmailSettings _email;
+        private readonly EmailSettings _emailSettings;
 
-        public EmailServiceProvider(EmailSettings email)
+        public EmailServiceProvider(EmailSettings emailSettings)
         {
-            _email = email;
+            _emailSettings = emailSettings;
         }
 
 
@@ -28,9 +28,9 @@ namespace Core.Services
                     message.Subject = subject;
                     message.Body = content;
 
-                    using (var smtpClient = new SmtpClient("smtp.gmail.com", 587)
+                    using (var smtpClient = new SmtpClient(_emailSettings.Host, _emailSettings.Port)
                            {
-                               Credentials = new NetworkCredential(_email.Email, _email.Password),
+                               Credentials = new NetworkCredential(_emailSettings.Email, _emailSettings.Password),
                                EnableSsl = true
                            })
                     {
