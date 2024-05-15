@@ -18,6 +18,11 @@ namespace Core.Services
             _configuration = configuration;
         }
 
+        public async Task<User?> GetByIdAsync(Guid id)
+        {
+            return await _db.Users.AsNoTracking().SingleOrDefaultAsync(u => u.Id == id);
+        }
+
         public async Task<User?> GetUserByEmailAsync(string email)
         {
             return await _db.Users.AsNoTracking()
@@ -51,5 +56,31 @@ namespace Core.Services
             await _db.SaveChangesAsync();
         }
 
+        public async Task<bool> ForgotPasswordFinalizeAsync(Guid userId, string passwordHash, string confirmationToken)
+        {
+            var user = await _db.Users.SingleOrDefaultAsync(u =>
+                u.Id == userId && u.ConfirmationToken == confirmationToken);
+            if (user == null) return false;
+
+            user.PasswordHash = passwordHash;
+            user.ConfirmationToken = null;
+            user.ConfirmationTokenExpiryDate = null;
+            await _db.SaveChangesAsync();
+
+            return true;
+        }
+
+        public async Task<bool> ConfirmAccountRegistrationAsync(Guid userId, string confirmationToken)
+        {
+            var user = await _db.Users.SingleOrDefaultAsync(u =>
+                u.Id == userId && u.ConfirmationToken == confirmationToken);
+            if (user == null) return false;
+
+            user.Confirmed = true;
+            user.ConfirmationToken = null;
+            user.ConfirmationTokenExpiryDate = null;
+            await _db.SaveChangesAsync();
+            return true;
+        }
     }
 }

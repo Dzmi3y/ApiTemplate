@@ -8,12 +8,14 @@ using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using System.Xml;
+using Core.Config;
 using Core.IdentityConfig;
 using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Mvc.Authorization;
+using Core.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,6 +26,11 @@ JwtSecurityTokenHandler.DefaultMapInboundClaims = false;
 var jwtSettings = new JwtSettings();
 builder.Configuration.Bind(nameof(JwtSettings), jwtSettings);
 builder.Services.AddSingleton(jwtSettings);
+
+var emailSettings = new EmailSettings();
+builder.Configuration.Bind(nameof(EmailSettings), emailSettings);
+builder.Services.AddSingleton(emailSettings);
+
 
 builder.Services.AddAuthentication(options =>
     {
@@ -93,11 +100,11 @@ builder.Services.AddScoped(typeof(IPasswordHasher<>), typeof(PasswordHasher<>));
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IIssueTokenService, IssueTokenService>();
 builder.Services.AddScoped<IRefreshTokenService, RefreshTokenService>();
-
+builder.Services.AddScoped<IEmailServiceProvider, EmailServiceProvider>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

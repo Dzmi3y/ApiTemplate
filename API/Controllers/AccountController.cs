@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System.Web;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using Core.DTOs;
@@ -25,6 +26,7 @@ namespace API.Controllers
         private readonly IPasswordHasher<User> _passwordHasher;
         private readonly IIssueTokenService _issueTokenService;
         private readonly IRefreshTokenService _refreshTokenService;
+        private readonly IEmailServiceProvider _emailServiceProvider;
 
         public AccountController(
             ILogger<AccountController> logger,
@@ -32,7 +34,8 @@ namespace API.Controllers
             IUserService userService,
             IPasswordHasher<User> passwordHasher,
             IIssueTokenService issueTokenService,
-            IRefreshTokenService refreshTokenService
+            IRefreshTokenService refreshTokenService,
+            IEmailServiceProvider emailServiceProvider
             )
         {
             _logger = logger;
@@ -41,6 +44,7 @@ namespace API.Controllers
             _passwordHasher = passwordHasher;
             _issueTokenService = issueTokenService;
             _refreshTokenService = refreshTokenService;
+            _emailServiceProvider = emailServiceProvider;
         }
 
         [AllowAnonymous]
@@ -63,6 +67,24 @@ namespace API.Controllers
                 Name = request.Name,
                 ConfirmationToken = confirmationToken
             });
+
+                  var confirmationUrlBuilder = new UriBuilder(_configuration["Frontend:RegistrationConfirmationPageUrl"]);
+            var query = HttpUtility.ParseQueryString(confirmationUrlBuilder.Query);
+            query["userId"] = userId.ToString();
+            query["confirmationToken"] = confirmationToken;
+            confirmationUrlBuilder.Query = query.ToString();
+            var confirmationUrl = confirmationUrlBuilder.ToString();
+
+            var emailSent = await _emailServiceProvider.SendNoReplyEmailAsync(request.Email,
+                Resource.SignUpConfirmationEmailSubject,
+                string.Format(Resource.SignUpConfirmationEmailBody, confirmationUrl));
+
+            if (!emailSent)
+            {
+                await _userService.DeleteAccountAsync(userId);
+                return Conflict("Wasn't able to send confirmation email. Please try again");
+            }
+
 
             return Ok();
         }
@@ -135,6 +157,71 @@ namespace API.Controllers
             await _userService.DeleteAccountAsync(UserId);
             return Ok();
         }
+
+        [HttpPost]
+        [AllowAnonymous]
+        [SwaggerResponse(StatusCodes.Status200OK, Type = typeof(AuthSuccessResponse))]
+        [SwaggerResponse(StatusCodes.Status409Conflict, Type = typeof(string))]
+        [SwaggerResponse(StatusCodes.Status404NotFound, Type = typeof(string))]
+        [SwaggerOperation(Summary = "Endpoint for a confirmation code from email for registration")]
+        public async Task<IActionResult> ConfirmRegistration([FromBody] SignUpConfirmationRequest request)
+        {
+            var user = await _userService.GetByIdAsync(request.UserId);
+
+            if (user == null)
+                return NotFound("User not found");
+
+            if (user.Confirmed || string.IsNullOrWhiteSpace(user.ConfirmationToken))
+                return Conflict("Already confirmed");
+
+            if (!user.ConfirmationToken.Equals(request.ConfirmationToken, StringComparison.InvariantCultureIgnoreCase))
+                return BadRequest("Confirmation token does not match");
+
+            //todo ensure if expiration check is really needed for signup flow
+            //if (user.ConfirmationTokenExpiryDate < DateTime.UtcNow)
+            //    return Conflict("Confirmation expired");
+
+            var confirmed =
+                await _userService.ConfirmAccountRegistrationAsync(request.UserId, request.ConfirmationToken);
+            if (!confirmed)
+                return Conflict("Confirmation failed");
+
+            var tokenIssueServiceResponse = await _issueTokenService.GenerateAuthenticationResult(user);
+            return CreateAuthResponse(tokenIssueServiceResponse);
+        }
+
+        [HttpPost]
+        [AllowAnonymous]
+        [SwaggerResponse(StatusCodes.Status200OK, Type = typeof(AuthSuccessResponse))]
+        [SwaggerResponse(StatusCodes.Status409Conflict, Type = typeof(string))]
+        [SwaggerResponse(StatusCodes.Status400BadRequest, Type = typeof(string))]
+        [SwaggerResponse(StatusCodes.Status404NotFound, Type = typeof(string))]
+        [SwaggerOperation(Summary = "Endpoint for confirmation code from an email for recovery the password")]
+        public async Task<IActionResult> ForgotPasswordConfirmation(
+            [FromBody] ForgotPasswordConfirmationRequest request)
+        {
+            var user = await _userService.GetByIdAsync(request.UserId);
+            if (user == null)
+                return NotFound("User does not exist");
+            if (string.IsNullOrWhiteSpace(user.ConfirmationToken))
+                return Conflict("Already confirmed");
+
+            if (!user.ConfirmationToken.Equals(request.ConfirmationToken, StringComparison.InvariantCultureIgnoreCase))
+                return BadRequest("Confirmation token does not match");
+
+            ///todo ensure if expiration check is really needed for reset password flow
+            //if (user.ConfirmationTokenExpiryDate < DateTime.UtcNow)
+            //    return Conflict("Confirmation expired");
+
+            var passwordHash = _passwordHasher.HashPassword(null, request.Password);
+            var confirmed =
+                await _userService.ForgotPasswordFinalizeAsync(request.UserId, passwordHash, request.ConfirmationToken);
+            if (!confirmed)
+                return Conflict("Confirmation failed");
+            return Ok();
+        }
+
+
 
 
     }
