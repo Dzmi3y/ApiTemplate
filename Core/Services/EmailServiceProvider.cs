@@ -3,16 +3,19 @@ using System.Net;
 using Core.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Core.Config;
+using Microsoft.Extensions.Logging;
 
 namespace Core.Services
 {
     public class EmailServiceProvider : IEmailServiceProvider
     {
         private readonly EmailSettings _emailSettings;
+        private ILogger<EmailServiceProvider> _logger;
 
-        public EmailServiceProvider(EmailSettings emailSettings)
+        public EmailServiceProvider(EmailSettings emailSettings, ILogger<EmailServiceProvider> logger)
         {
             _emailSettings = emailSettings;
+            _logger = logger;
         }
 
 
@@ -42,6 +45,7 @@ namespace Core.Services
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex,ex.Message);
                 return false;
             }
 

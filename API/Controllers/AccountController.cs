@@ -68,7 +68,7 @@ namespace API.Controllers
                 ConfirmationToken = confirmationToken
             });
 
-                  var confirmationUrlBuilder = new UriBuilder(_configuration["Frontend:RegistrationConfirmationPageUrl"]);
+            var confirmationUrlBuilder = new UriBuilder(_configuration["Frontend:RegistrationConfirmationPageUrl"]);
             var query = HttpUtility.ParseQueryString(confirmationUrlBuilder.Query);
             query["userId"] = userId.ToString();
             query["confirmationToken"] = confirmationToken;
