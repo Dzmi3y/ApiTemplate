@@ -1,9 +1,8 @@
-﻿using System.Net.Mail;
-using System.Net;
+﻿using Core.Config;
 using Core.Interfaces;
-using Microsoft.Extensions.Configuration;
-using Core.Config;
 using Microsoft.Extensions.Logging;
+using System.Net;
+using System.Net.Mail;
 
 namespace Core.Services
 {
@@ -32,10 +31,10 @@ namespace Core.Services
                     message.Body = content;
 
                     using (var smtpClient = new SmtpClient(_emailSettings.Host, _emailSettings.Port)
-                           {
-                               Credentials = new NetworkCredential(_emailSettings.Email, _emailSettings.Password),
-                               EnableSsl = true
-                           })
+                    {
+                        Credentials = new NetworkCredential(_emailSettings.Email, _emailSettings.Password),
+                        EnableSsl = true
+                    })
                     {
                         await smtpClient.SendMailAsync(message);
                     }
@@ -45,7 +44,7 @@ namespace Core.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex,ex.Message);
+                _logger.LogError(ex, ex.Message);
                 return false;
             }
 

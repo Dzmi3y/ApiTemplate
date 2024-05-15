@@ -1,5 +1,5 @@
-﻿using Database.Entities;
-using Core.Models;
+﻿using Core.Models;
+using Database.Entities;
 
 namespace Core.Interfaces
 {

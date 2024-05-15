@@ -7,7 +7,7 @@ using Microsoft.Extensions.Configuration;
 
 namespace Core.Services
 {
-    public class UserService:IUserService
+    public class UserService : IUserService
     {
         private readonly AppDbContext _db;
         private readonly IConfiguration _configuration;

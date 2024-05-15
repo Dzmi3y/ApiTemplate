@@ -1,9 +1,9 @@
 ﻿using Core.Interfaces;
-using Database.Entities.Base;
-using Database.Entities;
-using Database;
-using Microsoft.EntityFrameworkCore;
 using Core.Models;
+using Database;
+using Database.Entities;
+using Database.Entities.Base;
+using Microsoft.EntityFrameworkCore;
 
 namespace Core.Services
 {

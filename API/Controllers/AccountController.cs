@@ -1,14 +1,14 @@
-﻿using System.Web;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using Swashbuckle.AspNetCore.Annotations;
+﻿using API.Contracts.Requests;
+using API.Contracts.Responses;
 using Core.DTOs;
 using Core.Interfaces;
-using Database.Entities;
-using Microsoft.AspNetCore.Identity;
-using API.Contracts.Requests;
-using API.Contracts.Responses;
 using Core.Models;
+using Database.Entities;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.Annotations;
+using System.Web;
 
 
 
@@ -129,7 +129,7 @@ namespace API.Controllers
         }
 
         [HttpPost]
-        [AllowAnonymous] 
+        [AllowAnonymous]
         [SwaggerResponse(StatusCodes.Status200OK)]
         [SwaggerOperation(Summary = "Log out from the system")]
         public async Task<IActionResult> SignOut([FromBody] SignOutRequest request)
