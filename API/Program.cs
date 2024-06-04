@@ -1,3 +1,4 @@
+using API;
 using Core.Config;
 using Core.IdentityConfig;
 using Core.Interfaces;
@@ -100,6 +101,7 @@ builder.Services.AddScoped<IEmailServiceProvider, EmailServiceProvider>();
 
 var app = builder.Build();
 
+app.UseMiddleware<ExceptionMiddleware>();
 
 if (app.Environment.IsDevelopment())
 {
