@@ -110,7 +110,7 @@ namespace API.Controllers
         [SwaggerResponse(StatusCodes.Status409Conflict, Type = typeof(string))]
         [SwaggerResponse(StatusCodes.Status404NotFound, Type = typeof(string))]
         [SwaggerOperation(Summary = "Endpoint for log in")]
-        public async Task<IActionResult> LocalSignIn([FromBody] SignInRequest request)
+        public async Task<IActionResult> SignIn([FromBody] SignInRequest request)
         {
             var user = await _userService.GetUserByEmailAsync(request.Email);
 
